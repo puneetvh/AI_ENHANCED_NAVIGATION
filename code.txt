@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Enhanced Navigation Suggestions</title>
+    <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?callback=GetMap&key=ArvOtsRu-9leZ9C_Ld8pdkp-cvN-LPy31sCSixQ3ESzxQiXFCWfil25KgU-9a-th" async defer></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: #0078D4;
+            color: white;
+            padding: 10px 20px;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            top: 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, padding 0.3s;
+        }
+
+        .navbar:hover {
+            background-color: #005f99;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            margin-left: 20px;
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-top: 60px;
+            padding: 20px;
+            padding-bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Map Container Styles */
+        #mapContainer {
+            width: 100%;
+            height: 400px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        /* Directions Panel Styles */
+        #directionsPanel {
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+            transition: max-height 0.3s, opacity 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #directionsPanel.active {
+            max-height: 600px;
+            opacity: 1;
+        }
+
+        .directions-heading {
+            font-size: 24px;
+            color: #0078D4;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .directions-list {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .directions-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+
+        /* News Container Styles */
+        #newsContainer,
+        #geminiContainer {
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .news-heading,
+        .gemini-heading {
+            font-size: 24px;
+            color: #0078D4;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .news-list,
+        .gemini-response {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        .news-item {
+            display: flex;
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .news-thumbnail {
+            width: 50px;
+            height: auto;
+            margin-right: 10px;
+        }
+
+        .news-title {
+            font-size: 18px;
+            flex: 1;
+        }
+
+        .news-description {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .news-link {
+            display: block;
+            margin-top: 10px;
+            color: #0078D4;
+            text-decoration: none;
+        }
+
+        .news-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Form Styles */
+        .button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #0078D4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #005f99;
+        }
+
+        .form-heading {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #0078D4;
+            text-align: center;
+        }
+
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        label {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+            text-align: left;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            transition: border-color 0.3s;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #0078D4;
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: #0078D4;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <h1>AI Enhanced Navigation Suggestions</h1>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Input form for user-provided locations -->
+        <div>
+            <h3 class="form-heading">Where would you like to go?</h3>
+            <form id="directionsForm">
+                <label for="fromLocation">From:</label>
+                <input type="text" id="fromLocation" placeholder="Enter starting location" required>
+                <br>
+                <label for="toLocation">To:</label>
+                <input type="text" id="toLocation" placeholder="Enter destination location" required>
+                <br>
+                <button class="button" type="submit">Get Directions</button>
+            </form>
+        </div>
+
+        <!-- Map Container -->
+        <div id="mapContainer"></div>
+
+        <!-- Directions Panel -->
+        <section id="directionsPanel">
+            <h2 class="directions-heading">Directions:</h2>
+            <ul class="directions-list">
+                <!-- Directions will be displayed here -->
+            </ul>
+        </section>
+
+        <!-- News Container -->
+        <section id="newsContainer">
+            <h2 class="news-heading">Explore the Latest Events:</h2>
+            <ul class="news-list" id="newsList"></ul>
+        </section>
+
+        <!-- Gemini AI Panel -->
+        <section id="geminiContainer">
+            <h2 class="gemini-heading">Gemini AI Predictions:</h2>
+            <div id="geminiResponse" class="gemini-response"></div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        &copy; 2024 AI Enhanced Navigation Suggestions. All rights reserved.
+    </footer>
+
+    <script>
+        let directionsManager;
+
+        function GetMap() {
+            const map = new Microsoft.Maps.Map(document.getElementById('mapContainer'), {
+                credentials: 'ArvOtsRu-9leZ9C_Ld8pdkp-cvN-LPy31sCSixQ3ESzxQiXFCWfil25KgU-9a-th',
+                center: new Microsoft.Maps.Location(47.6062, -122.3321),
+                zoom: 10
+            });
+
+            Microsoft.Maps.loadModule('Microsoft.Maps.Directions', function () {
+                directionsManager = new Microsoft.Maps.Directions.DirectionsManager(map);
+            });
+        }
+
+        document.getElementById('directionsForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const fromLocation = document.getElementById('fromLocation').value;
+            const toLocation = document.getElementById('toLocation').value;
+
+            const from = new Microsoft.Maps.Directions.Waypoint({ address: fromLocation });
+            const to = new Microsoft.Maps.Directions.Waypoint({ address: toLocation });
+
+            directionsManager.clearAll();
+            directionsManager.addWaypoint(from);
+            directionsManager.addWaypoint(to);
+
+            directionsManager.calculateDirections();
+
+            const directionsPanel = document.getElementById('directionsPanel');
+            directionsPanel.innerHTML = '';
+            directionsPanel.classList.add('active');
+
+            directionsManager.setRenderOptions({
+                itineraryContainer: directionsPanel,
+                displayManeuverIcons: true
+            });
+
+            fetchNews(fromLocation, toLocation);
+            fetchGeminiResponse();
+        });
+
+        async function fetchNews(fromLocation, toLocation) {
+            const apiKey = '3afb390048064beb80dcb0a2a7fe3118';
+            const newsUrl = `https://newsapi.org/v2/everything?q=${fromLocation} ${toLocation}&apiKey=${apiKey}&pageSize=10`;
+
+            try {
+                const response = await fetch(newsUrl);
+                const data = await response.json();
+
+                if (data.articles && data.articles.length > 0) {
+                    displayNews(data.articles);
+                } else {
+                    document.getElementById('newsList').innerHTML = '<p>No events found in the provided route.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching news:', error);
+                document.getElementById('newsList').innerHTML = '<p>Error fetching news. Please try again later.</p>';
+            }
+        }
+
+        function displayNews(articles) {
+            const newsList = document.getElementById('newsList');
+            newsList.innerHTML = '';
+
+            articles.forEach(article => {
+                const articleItem = document.createElement('li');
+                articleItem.classList.add('news-item');
+
+                if (article.urlToImage) {
+                    const thumbnail = document.createElement('img');
+                    thumbnail.classList.add('news-thumbnail');
+                    thumbnail.src = article.urlToImage;
+                    thumbnail.alt = 'Article Thumbnail';
+                    articleItem.appendChild(thumbnail);
+                }
+
+                const textContainer = document.createElement('div');
+                textContainer.classList.add('news-text-container');
+
+                const titleElement = document.createElement('h3');
+                titleElement.classList.add('news-title');
+                titleElement.textContent = article.title;
+
+                const descriptionElement = document.createElement('p');
+                descriptionElement.classList.add('news-description');
+                descriptionElement.textContent = article.description || '';
+
+                const linkElement = document.createElement('a');
+                linkElement.classList.add('news-link');
+                linkElement.textContent = 'Read more';
+                linkElement.href = article.url;
+                linkElement.target = '_blank';
+
+                textContainer.appendChild(titleElement);
+                textContainer.appendChild(descriptionElement);
+                textContainer.appendChild(linkElement);
+
+                articleItem.appendChild(textContainer);
+
+                newsList.appendChild(articleItem);
+            });
+        }
+
+        async function fetchGeminiResponse() {
+            const fromLocation = document.getElementById('fromLocation').value;
+            const toLocation = document.getElementById('toLocation').value;
+
+            const geminiResponseContainer = document.getElementById('geminiResponse');
+            geminiResponseContainer.innerHTML = '';
+
+            const geminiResponse = await getGeminiResponse(fromLocation, toLocation);
+            const geminiResponseText = document.createElement('p');
+            geminiResponseText.textContent = geminiResponse;
+
+            geminiResponseContainer.appendChild(geminiResponseText);
+        }
+
+        async function getGeminiResponse(fromLocation, toLocation) {
+            // Add your Gemini AI integration code here
+            // Replace the sample return statement below with actual Gemini AI response retrieval logic
+            return "Sample Gemini AI response for " + fromLocation + " to " + toLocation;
+        }
+    </script>
+</body>
+
+</html>
